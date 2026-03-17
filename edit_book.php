@@ -35,7 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="header">
-        <div class="logo"><i class="fas fa-edit"></i> Edit Book</div>
+        <div class="logo-container">
+            <img src="images/logo.png" alt="SGJ Logo" class="header-logo" onerror="this.style.display='none'">
+            <span class="header-text">Edit Book</span>
+        </div>
         <div class="user-info">
             <a href="index.php" class="btn btn-info">
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
@@ -45,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <div class="container">
+    <div class="container container-wide">
         <div class="auth-card" style="margin-top: 20px;">
             <h2>Edit Book</h2>
             <form method="POST">
@@ -59,5 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
     </div>
+    <?php include 'footer.php'; ?>
 </body>
 </html>

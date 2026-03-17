@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'db.php';
 
 if (isset($_GET['delete_book']) && isAdmin()) {
@@ -55,7 +55,34 @@ $offset = ($current_page - 1) * $items_per_page;
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-$grouped_sql = "SELECT 
+// Shared JOIN base - used in both count and data queries
+$join_base = "FROM books b 
+LEFT JOIN (
+    SELECT book_id, SUM(CASE WHEN status = 'Issued' THEN 1 ELSE 0 END) as issued_count 
+    FROM borrow_records GROUP BY book_id
+) issued ON b.id = issued.book_id
+LEFT JOIN (
+    SELECT book_id, SUM(copies_requested) as pending_count
+    FROM borrow_requests
+    WHERE status = 'pending'
+    GROUP BY book_id
+) pending ON b.id = pending.book_id ";
+
+// Optional WHERE clause - must come BEFORE GROUP BY
+$where_clause  = '';
+$search_params = [];
+if ($search) {
+    $where_clause  = " WHERE (b.title LIKE ? OR b.author LIKE ?) ";
+    $search_params = ["%$search%", "%$search%"];
+}
+
+// Count query
+$count_stmt = $pdo->prepare("SELECT COUNT(DISTINCT b.title) " . $join_base . $where_clause);
+$count_stmt->execute($search_params);
+$total_books = $count_stmt->fetchColumn();
+
+// Data query - WHERE is placed before GROUP BY, ORDER BY, LIMIT
+$data_sql = "SELECT 
     b.title,
     b.author,
     GROUP_CONCAT(b.id ORDER BY b.id) as book_ids,
@@ -64,44 +91,13 @@ $grouped_sql = "SELECT
     SUM(b.copies) as total_copies,
     SUM(COALESCE(issued.issued_count, 0)) as total_issued,
     SUM(COALESCE(pending.pending_count, 0)) as total_pending,
-    SUM(b.copies - COALESCE(issued.issued_count, 0) - COALESCE(pending.pending_count, 0)) as total_available
-FROM books b 
-LEFT JOIN (
-    SELECT book_id, SUM(CASE WHEN status = 'Issued' THEN 1 ELSE 0 END) as issued_count 
-    FROM borrow_records GROUP BY book_id
-) issued ON b.id = issued.book_id
-LEFT JOIN (
-    SELECT book_id, SUM(copies_requested) as pending_count
-    FROM borrow_requests
-    WHERE status = 'pending'
-    GROUP BY book_id
-) pending ON b.id = pending.book_id
-GROUP BY b.title, b.author";
+    SUM(b.copies - COALESCE(issued.issued_count, 0) - COALESCE(pending.pending_count, 0)) as total_available "
+    . $join_base
+    . $where_clause
+    . " GROUP BY b.title, b.author ORDER BY b.title ASC LIMIT ? OFFSET ?";
 
-$count_sql = "SELECT COUNT(DISTINCT b.title) FROM books b 
-LEFT JOIN (
-    SELECT book_id, SUM(CASE WHEN status = 'Issued' THEN 1 ELSE 0 END) as issued_count 
-    FROM borrow_records GROUP BY book_id
-) issued ON b.id = issued.book_id
-LEFT JOIN (
-    SELECT book_id, SUM(copies_requested) as pending_count
-    FROM borrow_requests
-    WHERE status = 'pending'
-    GROUP BY book_id
-) pending ON b.id = pending.book_id";
-
-if ($search) {
-    $count_stmt = $pdo->prepare($count_sql . " WHERE b.title LIKE ? OR b.author LIKE ?");
-    $count_stmt->execute(["%$search%", "%$search%"]);
-    $total_books = $count_stmt->fetchColumn();
-    
-    $stmt = $pdo->prepare($grouped_sql . " WHERE b.title LIKE ? OR b.author LIKE ? ORDER BY b.title ASC LIMIT ? OFFSET ?");
-    $stmt->execute(["%$search%", "%$search%", $items_per_page, $offset]);
-} else {
-    $total_books = $pdo->query($count_sql)->fetchColumn();
-    $stmt = $pdo->prepare($grouped_sql . " ORDER BY b.title ASC LIMIT ? OFFSET ?");
-    $stmt->execute([$items_per_page, $offset]);
-}
+$stmt = $pdo->prepare($data_sql);
+$stmt->execute(array_merge($search_params, [$items_per_page, $offset]));
 
 $books = $stmt->fetchAll();
 
@@ -187,10 +183,13 @@ if (isset($_GET['msg'])) {
 </head>
 <body>
     <div class="header">
-        <div class="logo"><i class="fas fa-book-reader"></i> SGJ Library</div>
+        <div class="logo-container">
+            <img src="images/logo.png" alt="SGJ Logo" class="header-logo" onerror="this.style.display='none'">
+            <span class="header-text">SGJ LIBRARY</span>
+        </div>
         <div class="user-info">
             <?php if (isLoggedIn()): ?>
-                <span>Welcome, <?= htmlspecialchars($_SESSION['name']) ?> (<?= $_SESSION['role'] ?>)</span>
+                <span>Welcome, <?= htmlspecialchars($_SESSION['name']) ?></span>
                 
                 <?php if (isStudent()): ?>
                     <button onclick="openModal()" class="btn-info">
@@ -205,22 +204,26 @@ if (isset($_GET['msg'])) {
         </div>
     </div>
 
+    <?php if (!isLoggedIn()): ?>
     <div class="container">
         <?php if (isset($error)): ?><div class="alert alert-error"><?= $error ?></div><?php endif; ?>
-        <?php if (isset($success)): ?><div class="alert alert-success"><?= $success ?></div><?php endif; ?>
-
-        <?php if (!isLoggedIn()): ?>
-             <div class="auth-section">
-                <div class="auth-card">
-                    <h2>Admin/Student Login</h2>
-                    <form method="POST">
-                        <input type="email" name="email" placeholder="Email" required>
-                        <input type="password" name="password" placeholder="Password" required>
-                        <button type="submit" name="login" class="btn btn-primary">Login</button>
-                    </form>
+        <div class="auth-section">
+            <div class="auth-card">
+                <h2>Admin/Student Login</h2>
+                <form method="POST">
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit" name="login" class="btn btn-primary">Login</button>
+                </form>
+                <div style="margin-top: 15px;">
+                    <a href="forgot_password.php" style="color: var(--primary); text-decoration: none; font-weight: 500;">Forgot Password?</a>
                 </div>
-             </div>
-        <?php else: ?>
+            </div>
+        </div>
+    </div>
+    <?php else: ?>
+    <div class="container container-wide">
+        <?php if (isset($success)): ?><div class="alert alert-success"><?= $success ?></div><?php endif; ?>
 
             <?php if (isAdmin()): ?>
                 <div class="admin-section">
@@ -229,6 +232,9 @@ if (isset($_GET['msg'])) {
                     <div class="admin-toolbar">
                         <a href="manage_requests.php" class="admin-action-card card-requests">
                             <i class="fas fa-tasks"></i> Manage Requests
+                        </a>
+                        <a href="manage_resets.php" class="admin-action-card card-resets">
+                            <i class="fas fa-key"></i> Password Resets
                         </a>
                         <a href="add_book.php" class="admin-action-card card-add">
                             <i class="fas fa-plus-circle"></i> Add Book
@@ -303,22 +309,22 @@ if (isset($_GET['msg'])) {
                 <?= generatePagination($current_page, $total_pages, $total_books, $search) ?>
             <?php endif; ?>
 
-        <?php endif; ?>
     </div>
+    <?php endif; ?>
     <div id="trackModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-history"></i> My Borrow Requests</h3>
-                <span class="close-btn" onclick="closeModal()">&times;</span>
+        <div class="modal-content" style="width: fit-content; min-width: 260px; max-width: 90%; min-height: unset; padding: 25px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.5rem; border-radius: 15px 15px 0 0; margin: -40px -40px 20px -40px;">
+                <h3 style="margin:0; color: var(--accent); font-size: 1.3rem;"><i class="fas fa-history"></i> My Borrow Requests</h3>
+                <span class="close-btn" onclick="closeModal()" style="cursor:pointer; font-size: 1.8rem; color:#fff; line-height:1;">&times;</span>
             </div>
             
             <div class="modal-body">
-                <table class="track-table">
+                <table class="track-table" style="width: auto; table-layout: auto;">
                     <thead>
                         <tr>
-                            <th>Book</th>
-                            <th>Copies</th>
-                            <th>Status</th>
+                            <th style="min-width: 160px;">Book Title</th>
+                            <th style="text-align:center; width: 60px;">Copies</th>
+                            <th style="width: 90px;">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -326,29 +332,38 @@ if (isset($_GET['msg'])) {
                         if (isLoggedIn() && isStudent()) {
                             $user_id = $_SESSION['user_id'];
                             $track_stmt = $pdo->prepare(
-                                "SELECT br.*, b.title 
+                                "SELECT br.id, br.copies_requested, br.status, b.title AS book_title
                                 FROM borrow_requests br 
-                                JOIN books b ON br.book_id = b.id 
+                                LEFT JOIN books b ON br.book_id = b.id 
                                 WHERE br.user_id = ? 
-                                ORDER BY br.id DESC LIMIT 10"
+                                ORDER BY br.id DESC LIMIT 20"
                             );
                             $track_stmt->execute([$user_id]);
                             $my_requests = $track_stmt->fetchAll();
 
                             if ($my_requests) {
                                 foreach ($my_requests as $req) {
-                                    $badgeClass = 'issued';
-                                    if ($req['status'] == 'approved') $badgeClass = 'available';
-                                    if ($req['status'] == 'rejected') $badgeClass = 'issued';
-                                    
+                                    $status = $req['status'];
+                                    if ($status == 'approved') {
+                                        $badgeClass = 'available';
+                                        $badgeLabel = 'Approved';
+                                    } elseif ($status == 'rejected') {
+                                        $badgeClass = 'issued';
+                                        $badgeLabel = 'Rejected';
+                                    } else {
+                                        $badgeClass = 'pending-badge';
+                                        $badgeLabel = 'Pending';
+                                    }
+                                    $bookTitle = !empty($req['book_title']) ? htmlspecialchars(substr($req['book_title'], 0, 45)) : '<em style="color:#aaa">Unknown Book</em>';
+
                                     echo "<tr>";
-                                    echo "<td style='color: #333; font-weight: 500;'>" . htmlspecialchars(substr($req['title'], 0, 30)) . "</td>";
+                                    echo "<td style='color: #1e3a8a; font-weight: 600;'>" . $bookTitle . "</td>";
                                     echo "<td style='text-align:center; color: #333; font-weight: 600;'>" . $req['copies_requested'] . "</td>";
-                                    echo "<td><span class='status $badgeClass'>" . ucfirst($req['status']) . "</span></td>";
+                                    echo "<td><span class='status $badgeClass'>" . $badgeLabel . "</span></td>";
                                     echo "</tr>";
                                 }
                             } else {
-                                echo "<tr><td colspan='3' style='text-align:center'>No requests found.</td></tr>";
+                                echo "<tr><td colspan='3' style='text-align:center; color:#666; padding:20px;'>No requests found.</td></tr>";
                             }
                         }
                         ?>
@@ -371,5 +386,6 @@ if (isset($_GET['msg'])) {
             }
         }
     </script>
+    <?php include 'footer.php'; ?>
 </body>
 </html>

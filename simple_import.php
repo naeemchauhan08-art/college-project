@@ -81,7 +81,10 @@ if (isset($_POST['import'])) {
 </head>
 <body>
     <div class="header">
-        <div class="logo"><i class="fas fa-file-csv"></i> Import Books</div>
+        <div class="logo-container">
+            <img src="images/logo.png" alt="SGJ Logo" class="header-logo" onerror="this.style.display='none'">
+            <span class="header-text">Import Books</span>
+        </div>
         <div class="user-info">
             <a href="index.php" class="btn btn-info">
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
@@ -91,7 +94,7 @@ if (isset($_POST['import'])) {
         </div>
     </div>
 
-    <div class="container">
+    <div class="container container-wide">
         <div class="auth-card" style="margin-top: 20px;">
             <h2>Import Books (Simple Version)</h2>
         <?php if($message) echo "<p style='color:green; font-weight:bold;'>$message</p>"; ?>
@@ -105,5 +108,6 @@ if (isset($_POST['import'])) {
         <a href="index.php" class="btn btn-info" style="display:inline-block; margin-top: 15px;"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
         </div>
     </div>
+    <?php include 'footer.php'; ?>
 </body>
 </html>

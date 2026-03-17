@@ -114,13 +114,22 @@ p {
     border-bottom: 4px solid var(--accent);
 }
 
-.logo {
-    font-size: 1.8rem;
-    font-weight: var(--font-weight-bold);
-    color: var(--accent);
+.logo-container {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+}
+
+.header-logo {
+    height: 45px;          /* Restrict height so it doesn't break the header */
+    width: auto;           /* Keep aspect ratio */
+    object-fit: contain;   /* Ensure the entire logo is visible */
+}
+
+.header-text {
+    font-size: 1.8rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -193,39 +202,34 @@ p {
     box-shadow: var(--shadow-lg);
 }
 
-/* Info Button - Enhanced for Track My Request */
-.btn-info {
-    background: var(--accent);
-    color: var(--primary);
-    border: 2px solid var(--accent);
-    padding: 1rem 2rem;       /* Even bigger padding */
-    font-size: 1.2rem;        /* Larger text */
-    font-weight: 700;         /* Extra bold */
-    text-transform: uppercase; /* Uppercase for emphasis */
-    letter-spacing: 1px;      /* Letter spacing */
-    border-radius: 8px;       /* Consistent border radius */
-    transition: all 0.3s ease; /* Smooth transition */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+/* --- 4. Admin Buttons - White Text Fix --- */
+.admin-book-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
 }
 
-.btn-info:hover {
-    background: #e6c200;
-    transform: translateY(-3px); /* Stronger lift effect */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
-    color: var(--primary); /* Ensure text color stays consistent */
+.btn-edit, .btn-success, .btn-primary, .btn-info {
+    color: #ffffff !important; /* FORCES WHITE TEXT */
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
 }
 
-/* Specific styling for the Track My Request button in user-info section */
-.user-info .btn-info {
-    padding: 1.2rem 2.5rem;   /* Extra large for prominence */
-    font-size: 1.3rem;        /* Biggest text size */
-    margin: 0.5rem;           /* Some spacing */
-}
+.btn-success { background-color: #10b981; } /* Green for Add/Approve */
+.btn-edit { background-color: #1e3a8a; }    /* Royal Blue for View/Edit */
+.btn-info { background-color: #0284c7; }    /* Sky Blue */
 
-/* Small Button */
-.btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
+/* Ensure buttons in tables keep their color */
+.track-table td .btn,
+table td .btn,
+.admin-dashboard .track-table td .btn {
+    color: var(--text-white) !important;
 }
 
 /* === ADMIN SECTION STYLES === */
@@ -250,10 +254,17 @@ p {
 
 /* === CARD STYLES === */
 .container {
-    max-width: 1200px;
+    width: 100%;
+    max-width: 600px;    /* Default: small, for login/forgot-password pages */
     margin: var(--spacing-xl) auto;
     padding: 0 var(--spacing-md);
     flex: 1;
+}
+
+/* Wide container for admin panel pages (manage_users, manage_requests, etc.) */
+.container-wide {
+    width: 95%;
+    max-width: 1600px;
 }
 
 .book-card, .auth-card, .admin-action-card {
@@ -273,27 +284,35 @@ p {
     border-top-color: var(--accent);
 }
 
+/* --- 1. Main Grid Container --- */
 .books-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-md);
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    padding: 20px 0;
 }
 
+/* --- 2. Enhanced Book Cards (Solid White) --- */
 .book-card {
-    background-color: #ffffff;
-    color: #1e3a8a;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    padding: var(--spacing-lg);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #ffffff !important; /* Forces solid white background */
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 10, 0.15); /* Stronger shadow for depth */
+    transition: transform 0.3s ease;
+    border: 1px solid #e2e8f0;
+    color: #1e3a8a; /* Dark blue text for readability */
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
 }
 
 .book-card h3 {
-    color: var(--primary);
-    font-size: 1.25rem;
-    margin-bottom: var(--spacing-sm);
+    margin-top: 0;
+    font-size: 1.2rem;
+    color: #1e3a8a;
+    border-bottom: 2px solid #fbbf24; /* Gold accent line */
+    padding-bottom: 8px;
 }
 
 .book-card p {
@@ -330,25 +349,19 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 0 3px rgba(11, 60, 93, 0.1);
 }
 
-/* === STATUS BADGES === */
+/* --- 3. Status Badges --- */
 .status {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 2rem;
+    padding: 5px 12px;
+    border-radius: 20px;
     font-size: 0.85rem;
-    font-weight: var(--font-weight-bold);
-    text-transform: uppercase;
+    font-weight: 600;
+    margin: 10px 0;
 }
 
-.available {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.issued {
-    background-color: #f8d7da;
-    color: #721c24;
-}
+.status.available { background: #16a34a; color: #ffffff; border: 2px solid #15803d; }
+.status.issued { background: #dc2626; color: #ffffff; border: 2px solid #b91c1c; }
+.status.pending-badge { background: #d97706; color: #ffffff; border: 2px solid #b45309; }
 
 /* === ALERTS === */
 .alert {
@@ -406,198 +419,26 @@ input:focus, select:focus, textarea:focus {
     flex: 1;
 }
 
-/* --- Table Styles for Admin Panels --- */
-table {
+/* --- 5. Fix for Tables (Manage Users/Requests) --- */
+.track-table, .admin-table {
     width: 100%;
+    background: #ffffff !important;
     border-collapse: collapse;
-    background-color: #ffffff !important; /* Solid white background */
     border-radius: 8px;
-    overflow: hidden; /* Keeps the rounded corners neat */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important; /* Soft shadow to lift it off the background */
+    overflow: hidden;
     margin-top: 20px;
 }
 
-th {
-    background-color: #1e3a8a !important; /* SGJ Royal Blue */
-    color: #ffffff !important; /* White text for headers */
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-}
-
-td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #e2e8f0;
-    color: #000000 !important; /* Pure black text for maximum visibility */
-    background-color: #ffffff !important; /* Ensures every cell is solid white */
-}
-
-/* Add a very subtle light blue hover effect for rows */
-tr:hover td {
-    background-color: #f8fafc !important; 
-}
-
-/* === TABLE STYLES === */
-.track-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: var(--spacing-md) 0;
-    background-color: #ffffff !important;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-}
-
-.track-table th,
-.track-table td {
-    padding: var(--spacing-md);
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    color: #000000 !important; /* Pure black text */
-    background-color: #ffffff !important;
-}
-
 .track-table th {
-    background-color: #1e3a8a !important;
+    background: #1e3a8a;
     color: #ffffff !important;
-    font-weight: var(--font-weight-bold);
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    border-bottom: 2px solid #1e3a8a;
+    padding: 15px;
 }
 
-.track-table tbody tr {
-    background-color: #ffffff !important;
-}
-
-.track-table tbody tr:hover {
-    background-color: #f8fafc !important;
-}
-
-/* Ensure all table cell content is visible */
-.track-table td *,
-.track-table th * {
-    color: inherit !important;
-}
-
-.track-table strong {
-    color: #000000 !important;
-    font-weight: 600 !important;
-}
-
-/* Additional styling for admin dashboard */
-.admin-dashboard {
-    background: #ffffff !important;
-    border-radius: 8px;
-    padding: var(--spacing-lg);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Force white background for all table elements */
-.admin-dashboard .track-table,
-.admin-dashboard .track-table th,
-.admin-dashboard .track-table td,
-.admin-dashboard .track-table tbody tr,
-.admin-dashboard .track-table thead tr {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-}
-
-/* Specific styling for manage users page */
-body div.container div.admin-dashboard table.track-table {
-    background-color: #ffffff !important;
-}
-
-body div.container div.admin-dashboard table.track-table th {
-    background-color: #1e3a8a !important;
-    color: #ffffff !important;
-}
-
-body div.container div.admin-dashboard table.track-table td {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-}
-
-/* Ensure status badges are visible */
-.admin-dashboard .status {
-    color: #ffffff !important;
-}
-
-.admin-dashboard .status.available {
-    background-color: #28a745 !important;
-    color: #ffffff !important;
-}
-
-.admin-dashboard .status.issued {
-    background-color: #dc3545 !important;
-    color: #ffffff !important;
-}
-
-/* Most aggressive styling - override everything */
-* table,
-* table th,
-* table td,
-* table tr,
-* .track-table,
-* .track-table th,
-* .track-table td,
-* .track-table tr {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-}
-
-* table th,
-* .track-table th {
-    background-color: #1e3a8a !important;
-    color: #ffffff !important;
-}
-
-/* Additional styling for admin dashboard */
-.admin-dashboard {
-    background: #ffffff !important;
-    border-radius: 8px;
-    padding: var(--spacing-lg);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Force white background for all table elements */
-.admin-dashboard .track-table,
-.admin-dashboard .track-table th,
-.admin-dashboard .track-table td,
-.admin-dashboard .track-table tbody tr,
-.admin-dashboard .track-table thead tr {
-    background-color: #ffffff !important;
-    color: #333333 !important;
-}
-
-/* Specific styling for manage users page */
-body div.container div.admin-dashboard table.track-table {
-    background-color: #ffffff !important;
-}
-
-body div.container div.admin-dashboard table.track-table th {
-    background-color: #f8f9fa !important;
-    color: #0B3C5D !important;
-}
-
-body div.container div.admin-dashboard table.track-table td {
-    background-color: #ffffff !important;
-    color: #333333 !important;
-}
-
-/* Ensure status badges are visible */
-.admin-dashboard .status {
-    color: #ffffff !important;
-}
-
-.admin-dashboard .status.available {
-    background-color: #28a745 !important;
-    color: #ffffff !important;
-}
-
-.admin-dashboard .status.issued {
-    background-color: #dc3545 !important;
-    color: #ffffff !important;
+.track-table td {
+    padding: 12px;
+    border-bottom: 1px solid #edf2f7;
+    color: #2d3748 !important; /* Dark grey for text */
 }
 
 /* === MODAL STYLES === */
@@ -616,13 +457,13 @@ body div.container div.admin-dashboard table.track-table td {
 
 .modal-content {
     background: #ffffff;
-    border-radius: 0.5rem;
+    border-radius: 15px;
     padding: var(--spacing-xl);
     max-width: 90%;
-    width: 600px;
+    width: 580px;
     max-height: 80vh;
     overflow-y: auto;
-    box-shadow: var(--shadow-xl);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
     color: #333333;
 }
 
@@ -630,30 +471,65 @@ body div.container div.admin-dashboard table.track-table td {
     color: #333333;
 }
 
-.modal-body table td,
 .modal-body table th {
-    color: #333333 !important;
+    background: #1e3a8a;
+    color: #ffffff !important;
+    padding: 12px 15px;
+    font-size: 0.9rem;
+    text-align: left;
 }
 
-.modal-body .status {
-    color: #ffffff !important;
+.modal-body table td {
+    color: #333333 !important;
+    padding: 11px 15px;
+    border-bottom: 1px solid #e8ecf0;
+    vertical-align: middle;
 }
 
 /* === FOOTER === */
-footer {
+.site-footer {
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     color: var(--text-white);
     text-align: center;
-    padding: var(--spacing-xl) 0;
+    padding: var(--spacing-lg) 0 var(--spacing-md);
     margin-top: auto;
-    border-top: 4px solid var(--accent);
+    border-top: 3px solid var(--accent);
+    font-size: 1.2rem;
 }
 
-footer .container {
+.footer-content {
     display: flex;
     justify-content: center;
     gap: var(--spacing-xl);
     flex-wrap: wrap;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-xl);
+}
+
+.footer-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 1.2rem;
+}
+
+.footer-item i {
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+
+.footer-credit {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm) 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.5px;
+}
+
+.footer-credit strong {
+    color: var(--accent);
+    font-weight: 700;
 }
 
 /* === UTILITY CLASSES === */
@@ -975,21 +851,26 @@ footer .container {
     opacity: 0.5;
 }
 
-.pagination .prev, .pagination .next {
+.pagination .prev, .pagination .next, .prev, .next { display: flex; align-items: center; border-radius: 8px; border: 1px solid var(--border-dark); text-decoration: none; box-shadow: var(--shadow-sm); transition: all 0.2s ease;
     background-color: var(--accent);
     color: var(--primary);
     font-weight: var(--font-weight-bold);
     padding: 0.5rem 1rem;
 }
 
-.pagination .prev:hover, .pagination .next:hover {
+.pagination .prev:hover, .pagination .next:hover, .prev:hover, .next:hover { transform: translateY(-2px); box-shadow: var(--shadow-md);
     background-color: #e6c200;
     color: var(--primary);
 }
 
 .page-info {
     margin: 0 var(--spacing-md);
-    color: var(--dark);
+    background-color: var(--text-white);
+    color: var(--primary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-dark);
+    box-shadow: var(--shadow-sm);
     font-weight: var(--font-weight-bold);
     align-self: center;
 }
@@ -1006,7 +887,7 @@ footer .container {
         font-size: 0.9rem;
     }
     
-    .pagination .prev, .pagination .next {
+    .pagination .prev, .pagination .next, .prev, .next { display: flex; align-items: center; border-radius: 8px; border: 1px solid var(--border-dark); text-decoration: none; box-shadow: var(--shadow-sm); transition: all 0.2s ease;
         padding: 0.4rem 0.8rem;
         font-size: 0.9rem;
     }
@@ -1465,4 +1346,62 @@ footer .container {
 .book-card:hover h3 a::after {
     opacity: 1;
     right: -25px;
+}
+/* Remove the accent line under the Pending Approvals heading */
+.admin-container h2, 
+.admin-container h3, 
+.main-content h2,
+.auth-card h2,
+.section-title {
+    border-bottom: none !important;
+}
+
+/* Also remove it if it was created using a pseudo-element */
+.admin-container h2::after, 
+.admin-container h3::after, 
+.main-content h2::after,
+.auth-card h2::after,
+.section-title::after {
+    display: none !important;
+    content: none !important;
+}
+
+
+/* Target the decorative line under headings and remove it */
+.admin-container h2::after, 
+.admin-container h3::after, 
+h2::after, 
+h3::after {
+    display: none !important;
+    content: none !important;
+    height: 0 !important;
+    width: 0 !important;
+}
+
+/* Ensure there is no bottom border acting as a line */
+h2, h3 {
+    border-bottom: none !important;
+}
+
+
+/* Update this class to make all your white boxes bigger */
+.admin-container, 
+.login-box, 
+.modal-content, 
+.form-container,
+.auth-card {
+    background-color: var(--text-white); /* Ensures the box is solid white */
+    width: 95% !important;        /* Increases width from a small fix to most of the screen */
+    max-width: 1400px !important; /* Prevents it from getting too wide on huge monitors */
+    min-height: 500px;            /* Gives it more vertical "breathing room" */
+    padding: 40px !important;     /* Adds more space inside for the table/form */
+    margin: 40px auto;            /* Keeps it perfectly centered */
+    border-radius: 15px;          /* Optional: makes corners look smoother */
+    border-top: 6px solid var(--accent); /* Consistent accent line at the top */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3); /* Adds depth */
+}
+
+/* Ensure the table inside uses the full width of the now-bigger box */
+table {
+    width: 100% !important;
 }

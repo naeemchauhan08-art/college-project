@@ -80,7 +80,10 @@ $requests = $stmt->fetchAll();
 </head>
 <body>
     <div class="header">
-        <div class="logo"><i class="fas fa-tasks"></i> Manage Requests</div>
+        <div class="logo-container">
+            <img src="images/logo.png" alt="SGJ Logo" class="header-logo" onerror="this.style.display='none'">
+            <span class="header-text">Manage Requests</span>
+        </div>
         <div class="user-info">
             <a href="index.php" class="btn btn-info">
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
@@ -90,7 +93,7 @@ $requests = $stmt->fetchAll();
         </div>
     </div>
 
-    <div class="container">
+    <div class="container container-wide">
         <?php if (isset($msg)): ?>
             <div class="alert alert-success"><?= htmlspecialchars($msg) ?></div>
         <?php endif; ?>
@@ -98,7 +101,7 @@ $requests = $stmt->fetchAll();
             <div class="alert alert-error"><?= htmlspecialchars($err) ?></div>
         <?php endif; ?>
 
-        <div class="auth-card" style="max-width: 1000px; margin: 0 auto; text-align: left;">
+        <div class="admin-container" style="text-align: left;">
             <h2 class="section-title">Pending Approvals</h2>
 
             <?php if (count($requests) > 0): ?>
@@ -138,5 +141,6 @@ $requests = $stmt->fetchAll();
             <?php endif; ?>
         </div>
     </div>
+    <?php include 'footer.php'; ?>
 </body>
 </html>
