@@ -13,25 +13,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['approve_reset'])) {
     $request_id = $_POST['request_id'];
     $user_id = $_POST['user_id'];
     
-    // 1. Generate the random password
     $plain_password = generateRandomPassword();
     
-    // 2. Hash it for the database
     $hashed_password = password_hash($plain_password, PASSWORD_BCRYPT);
     
-    // 3. Update the Users table
     $updateUser = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
     $updateUser->execute([$hashed_password, $user_id]);
     
-    // 4. Mark request as completed & store temporary password so admin can see it once
     $updateReq = $pdo->prepare("UPDATE password_resets SET status = 'completed', temp_password_shown = ? WHERE id = ?");
     $updateReq->execute([$plain_password, $request_id]);
     
-    // 5. Success Message to Admin
-    $msg = "Password reset! Give this temporary password to the student: <strong>" . htmlspecialchars($plain_password) . "</strong>";
+    $msg = "Password reset! Share this new password with the user — it is their permanent login password: <strong>" . htmlspecialchars($plain_password) . "</strong>";
 }
 
-// Fetch requests
 $requestsQuery = "SELECT pr.*, u.name, u.email, u.role 
                   FROM password_resets pr 
                   JOIN users u ON pr.user_id = u.id 
@@ -51,7 +45,7 @@ $requests = $pdo->query($requestsQuery)->fetchAll();
     <div class="header">
         <div class="logo-container">
             <img src="images/logo.png" alt="SGJ Logo" class="header-logo" onerror="this.style.display='none'">
-            <span class="header-text">Manage Password Resets</span>
+            <span class="header-text">SGJ LIBRARY</span>
         </div>
         <div class="user-info">
             <a href="index.php" class="btn btn-info">
@@ -67,7 +61,10 @@ $requests = $pdo->query($requestsQuery)->fetchAll();
             </div>
         <?php endif; ?>
 
-        <div class="admin-dashboard">
+        <div class="admin-dashboard" style="background: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <h2 style="color: #0B3C5D; font-size: 1.6rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 3px solid #FFD700; text-align: center;">
+                Password Reset Requests
+            </h2>
             <table class="track-table admin-table">
                 <thead>
                     <tr>
@@ -104,7 +101,7 @@ $requests = $pdo->query($requestsQuery)->fetchAll();
                                         </button>
                                     </form>
                                 <?php elseif($req['status'] == 'completed' && !empty($req['temp_password_shown'])): ?>
-                                    <span style="color:red; font-weight:bold;">Current Temp: <?= htmlspecialchars($req['temp_password_shown']) ?></span>
+                                    <span style="color:#0B3C5D; font-weight:bold;">New Password: <?= htmlspecialchars($req['temp_password_shown']) ?></span>
                                 <?php else: ?>
                                     -
                                 <?php endif; ?>

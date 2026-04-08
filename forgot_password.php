@@ -16,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_request'])) {
     $user = $stmt->fetch();
 
     if ($user) {
-        // Check if there's already a pending request to prevent spam
         $checkStmt = $pdo->prepare("SELECT id FROM password_resets WHERE user_id = ? AND status = 'pending'");
         $checkStmt->execute([$user['id']]);
         if ($checkStmt->rowCount() == 0) {

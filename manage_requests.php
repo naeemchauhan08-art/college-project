@@ -1,13 +1,11 @@
 <?php
 require_once 'db.php';
 
-// 1. Security Check
 if (!isAdmin()) {
     header("Location: index.php");
     exit();
 }
 
-// 2. Handle Actions (Approve/Reject)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action']) && isset($_POST['request_id'])) {
         $req_id = $_POST['request_id'];
@@ -16,19 +14,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
 
-            // Get request details
             $stmt = $pdo->prepare("SELECT book_id, user_id, copies_requested FROM borrow_requests WHERE id = ?");
             $stmt->execute([$req_id]);
             $request = $stmt->fetch();
 
             if ($request) {
                 if ($action === 'approve') {
-                    // Check stock one last time
                     $stmt = $pdo->prepare("SELECT copies FROM books WHERE id = ?");
                     $stmt->execute([$request['book_id']]);
                     $book = $stmt->fetch();
                     
-                    // Count currently issued
                     $stmt = $pdo->prepare("SELECT COUNT(*) FROM borrow_records WHERE book_id = ? AND status = 'Issued'");
                     $stmt->execute([$request['book_id']]);
                     $issued = $stmt->fetchColumn();
@@ -36,11 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $available = $book['copies'] - $issued;
 
                     if ($available >= $request['copies_requested']) {
-                        // Create Borrow Record
                         $stmt = $pdo->prepare("INSERT INTO borrow_records (user_id, book_id, status) VALUES (?, ?, 'Issued')");
                         $stmt->execute([$request['user_id'], $request['book_id']]);
                         
-                        // Update Request Status
                         $stmt = $pdo->prepare("UPDATE borrow_requests SET status = 'approved' WHERE id = ?");
                         $stmt->execute([$req_id]);
                         $msg = "Request approved successfully.";
@@ -57,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// 3. Fetch Requests (REMOVED 'created_at' to fix the error)
 $stmt = $pdo->query(
     "SELECT br.id, u.name, b.title, br.copies_requested, br.status
     FROM borrow_requests br
@@ -82,7 +74,7 @@ $requests = $stmt->fetchAll();
     <div class="header">
         <div class="logo-container">
             <img src="images/logo.png" alt="SGJ Logo" class="header-logo" onerror="this.style.display='none'">
-            <span class="header-text">Manage Requests</span>
+            <span class="header-text">SGJ LIBRARY</span>
         </div>
         <div class="user-info">
             <a href="index.php" class="btn btn-info">

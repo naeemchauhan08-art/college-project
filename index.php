@@ -55,7 +55,6 @@ $offset = ($current_page - 1) * $items_per_page;
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-// Shared JOIN base - used in both count and data queries
 $join_base = "FROM books b 
 LEFT JOIN (
     SELECT book_id, SUM(CASE WHEN status = 'Issued' THEN 1 ELSE 0 END) as issued_count 
@@ -68,7 +67,6 @@ LEFT JOIN (
     GROUP BY book_id
 ) pending ON b.id = pending.book_id ";
 
-// Optional WHERE clause - must come BEFORE GROUP BY
 $where_clause  = '';
 $search_params = [];
 if ($search) {
@@ -76,12 +74,10 @@ if ($search) {
     $search_params = ["%$search%", "%$search%"];
 }
 
-// Count query
 $count_stmt = $pdo->prepare("SELECT COUNT(DISTINCT b.title) " . $join_base . $where_clause);
 $count_stmt->execute($search_params);
 $total_books = $count_stmt->fetchColumn();
 
-// Data query - WHERE is placed before GROUP BY, ORDER BY, LIMIT
 $data_sql = "SELECT 
     b.title,
     b.author,

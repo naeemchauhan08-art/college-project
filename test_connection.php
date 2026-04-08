@@ -1,5 +1,4 @@
 <?php
-// Test script to check database connection and errors
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -18,17 +17,14 @@ try {
     
     echo "<p style='color: green;'>✓ Database connection successful</p>";
     
-    // Test if users table exists and has data
     $stmt = $pdo->query("SHOW TABLES LIKE 'users'");
     if ($stmt->rowCount() > 0) {
         echo "<p style='color: green;'>✓ Users table exists</p>";
         
-        // Count users
         $stmt = $pdo->query("SELECT COUNT(*) as count FROM users");
         $count = $stmt->fetch()['count'];
         echo "<p style='color: blue;'>Found $count users in database</p>";
         
-        // Show sample users
         $stmt = $pdo->query("SELECT id, name, email, role FROM users ORDER BY role, name LIMIT 10");
         $users = $stmt->fetchAll();
         
@@ -56,7 +52,6 @@ echo "<h2>PHP Info</h2>";
 echo "<p>PHP Version: " . PHP_VERSION . "</p>";
 echo "<p>Server: " . $_SERVER['SERVER_SOFTWARE'] . "</p>";
 
-// Check session
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }

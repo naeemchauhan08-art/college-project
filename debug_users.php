@@ -6,14 +6,12 @@ require_once 'db.php';
 
 echo "<h2>Manage Users Debug</h2>";
 
-// Check if user is admin
 if (!isAdmin()) {
     echo "<p style='color: red;'>Access denied: Not an admin user</p>";
     echo "<p>Please <a href='index.php'>login as admin</a> first</p>";
 } else {
     echo "<p style='color: green;'>✓ Admin access confirmed</p>";
     
-    // Fetch Users
     try {
         $users = $pdo->query("SELECT * FROM users ORDER BY role, name")->fetchAll();
         echo "<p style='color: blue;'>Found " . count($users) . " users</p>";
@@ -43,7 +41,6 @@ if (!isAdmin()) {
     }
 }
 
-// Show current session info
 echo "<h3>Session Info:</h3>";
 echo "<pre>";
 print_r($_SESSION);

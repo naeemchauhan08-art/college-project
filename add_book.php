@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="header">
         <div class="logo-container">
             <img src="images/logo.png" alt="SGJ Logo" class="header-logo" onerror="this.style.display='none'">
-            <span class="header-text">Add New Book</span>
+            <span class="header-text">SGJ LIBRARY</span>
         </div>
         <div class="user-info">
             <a href="index.php" class="btn btn-info">

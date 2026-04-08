@@ -1,15 +1,20 @@
 <?php
 require_once 'db.php';
 
-// Get book title from URL parameter
 $book_title = isset($_GET['title']) ? trim($_GET['title']) : '';
 
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+$search_query = isset($_GET['search']) ? $_GET['search'] : '';
+$back_url = "index.php?page=" . urlencode($page);
+if (!empty($search_query)) {
+    $back_url .= "&search=" . urlencode($search_query);
+}
+
 if (empty($book_title)) {
-    header("Location: index.php");
+    header("Location: " . $back_url);
     exit();
 }
 
-// Fetch all copies of the same book title
 $stmt = $pdo->prepare("
     SELECT b.*, 
            (b.copies - COALESCE(issued.issued_count, 0) - COALESCE(pending.pending_count, 0)) as available_copies,
@@ -33,38 +38,32 @@ $stmt->execute([$book_title]);
 $book_copies = $stmt->fetchAll();
 
 if (empty($book_copies)) {
-    header("Location: index.php");
+    header("Location: " . $back_url);
     exit();
 }
 
-// Get the first book as main reference for common details
 $main_book = $book_copies[0];
 
-// Calculate totals
 $total_copies = array_sum(array_column($book_copies, 'copies'));
 $total_available = array_sum(array_column($book_copies, 'available_copies'));
 $total_issued = array_sum(array_column($book_copies, 'issued_count'));
 $total_pending = array_sum(array_column($book_copies, 'pending_count'));
 
-// Handle success messages
 if (isset($_GET['msg'])) {
     if ($_GET['msg'] === 'requested') {
         $success = "Request submitted successfully!";
     }
 }
 
-// Handle book request
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_copy'])) {
     if (isLoggedIn() && isStudent()) {
         $book_id = (int)$_POST['book_id'];
         $user_id = $_SESSION['user_id'];
         $qty = max(1, (int)($_POST['copies_requested'] ?? 1));
         
-        // Capture current page and search from the form
         $current_page = isset($_POST['current_page']) ? $_POST['current_page'] : 1;
         $current_search = isset($_POST['current_search']) ? $_POST['current_search'] : '';
 
-        // Check if already requested
         $stmt = $pdo->prepare("SELECT id FROM borrow_requests WHERE user_id = ? AND book_id = ? AND status = 'pending'");
         $stmt->execute([$user_id, $book_id]);
         
@@ -72,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_copy'])) {
             $stmt = $pdo->prepare("INSERT INTO borrow_requests (user_id, book_id, copies_requested, status) VALUES (?, ?, ?, 'pending')");
             $stmt->execute([$user_id, $book_id, $qty]);
             
-            // Redirect back to the exact catalog page with search preserved
             $redirect_url = "index.php?msg=requested";
             $redirect_url .= "&page=" . urlencode($current_page);
            if (!empty($current_search)) {
@@ -102,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_copy'])) {
         <div class="book-details-content">
             <div class="book-details-header">
                 <h2><i class="fas fa-book"></i> <?= htmlspecialchars($main_book['title']) ?></h2>
-                <button class="close-book-details" onclick="window.location.href='index.php'">&times;</button>
+                <button class="close-book-details" onclick="window.location.href='<?= $back_url ?>'">&times;</button>
             </div>
             
             <div class="book-details-body">
@@ -200,17 +198,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_copy'])) {
     </div>
     
     <script>
-        // Close modal when clicking outside
         document.querySelector('.book-details-modal').addEventListener('click', function(event) {
             if (event.target === this) {
-                window.location.href = 'index.php';
+                window.location.href = '<?= $back_url ?>';
             }
         });
         
-        // Close with Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                window.location.href = 'index.php';
+                window.location.href = '<?= $back_url ?>';
             }
         });
     </script>

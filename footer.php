@@ -14,6 +14,6 @@
         </div>
     </div>
     <div class="footer-credit">
-        <span>Developed by <strong>Divyesh &amp; Naeem</strong></span>
+        <span>Developed by <strong>Chandariya Divyesh &amp; Chauhan Naeem</strong></span>
     </div>
 </footer>

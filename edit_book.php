@@ -9,7 +9,6 @@ if (!$id) {
     exit();
 }
 
-// Fetch book
 $stmt = $pdo->prepare("SELECT * FROM books WHERE id = ?");
 $stmt->execute([$id]);
 $book = $stmt->fetch();
@@ -19,7 +18,6 @@ if (!$book) {
     exit();
 }
 
-// Update book
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare("UPDATE books SET title=?, author=?, accession_no=?, publisher=?, copies=? WHERE id=?");
     $stmt->execute([$_POST['title'], $_POST['author'], $_POST['acc_no'], $_POST['publisher'], $_POST['copies'], $id]);
@@ -37,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="header">
         <div class="logo-container">
             <img src="images/logo.png" alt="SGJ Logo" class="header-logo" onerror="this.style.display='none'">
-            <span class="header-text">Edit Book</span>
+            <span class="header-text">SGJ LIBRARY</span>
         </div>
         <div class="user-info">
             <a href="index.php" class="btn btn-info">
